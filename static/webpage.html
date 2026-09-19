@@ -1,418 +1,104 @@
+package main
+
+import (
+	"html/template"
+	"log"
+	"net/http"
+)
+
+const page = `
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>N43aina's Portfolio & Static Website</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Custom transitions and smooth tab switching */
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.4s ease-in-out forwards;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>My Static Website</title>
+
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			font-family: Arial, sans-serif;
+			background: #f4f6f8;
+			color: #222;
+		}
+
+		header {
+			background: #1f2937;
+			color: white;
+			padding: 20px;
+			text-align: center;
+		}
+
+		main {
+			max-width: 900px;
+			margin: 60px auto;
+			padding: 40px;
+			background: white;
+			border-radius: 12px;
+			box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+		}
+
+		h1 {
+			margin-top: 0;
+			color: #111827;
+		}
+
+		.author {
+			color: #6b7280;
+			font-size: 14px;
+		}
+
+		footer {
+			text-align: center;
+			padding: 20px;
+			color: #6b7280;
+		}
+	</style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
 
-    <!-- Sleek Responsive Navigation Bar -->
-    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo & Author Brand -->
-                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-indigo-500/20">
-                        N
-                    </div>
-                    <div>
-                        <span class="text-lg font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">N43aina</span>
-                        <span class="block text-xs text-slate-500 font-medium">Digital Portfolio</span>
-                    </div>
-                </div>
+<body>
 
-                <!-- Desktop Navigation Tabs -->
-                <nav class="hidden md:flex items-center space-x-1">
-                    <button onclick="switchTab('home')" id="nav-home" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-indigo-600 bg-indigo-50">
-                        <i class="fa-solid fa-house mr-2"></i>Home
-                    </button>
-                    <button onclick="switchTab('about')" id="nav-about" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-slate-600 hover:text-indigo-600 hover:bg-slate-100">
-                        <i class="fa-solid fa-user mr-2"></i>About
-                    </button>
-                    <button onclick="switchTab('contact')" id="nav-contact" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-slate-600 hover:text-indigo-600 hover:bg-slate-100">
-                        <i class="fa-solid fa-envelope mr-2"></i>Contact
-                    </button>
-                </nav>
+	<header>
+		<h2>My Website</h2>
+	</header>
 
-                <!-- Right Action / Mobile Menu Toggle -->
-                <div class="flex items-center space-x-3">
-                    <button onclick="switchTab('contact')" class="hidden sm:inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-200 shadow-indigo-500/20">
-                        Let's Talk
-                    </button>
-                    <!-- Mobile Hamburger Button -->
-                    <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-slate-100 focus:outline-none">
-                        <i class="fa-solid fa-bars text-xl" id="menu-icon"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
+	<main>
+		<h1>Welcome to My Static Website</h1>
 
-        <!-- Mobile Menu Drawer -->
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-slate-200 px-4 pt-2 pb-4 space-y-1">
-            <button onclick="switchTab('home'); toggleMobileMenu();" id="mob-nav-home" class="mob-nav-btn w-full text-left px-3 py-2 rounded-lg text-base font-medium text-indigo-600 bg-indigo-50 flex items-center">
-                <i class="fa-solid fa-house w-8"></i>Home
-            </button>
-            <button onclick="switchTab('about'); toggleMobileMenu();" id="mob-nav-about" class="mob-nav-btn w-full text-left px-3 py-2 rounded-lg text-base font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-100 flex items-center">
-                <i class="fa-solid fa-user w-8"></i>About
-            </button>
-            <button onclick="switchTab('contact'); toggleMobileMenu();" id="mob-nav-contact" class="mob-nav-btn w-full text-left px-3 py-2 rounded-lg text-base font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-100 flex items-center">
-                <i class="fa-solid fa-envelope w-8"></i>Contact
-            </button>
-        </div>
-    </header>
+		<p class="author">
+			Written by <strong>n43aina</strong>
+		</p>
 
-    <!-- Main Dynamic Content Wrapper -->
-    <main class="flex-grow">
+		<p>
+			This is a simple static website served using Go (Golang).
+			The page contains HTML and CSS while Go handles the HTTP server.
+		</p>
 
-        <!-- ================= HOME PAGE ================= -->
-        <section id="page-home" class="tab-content active">
-            <!-- Hero Banner -->
-            <div class="relative overflow-hidden bg-gradient-to-b from-indigo-50/50 via-white to-white py-20 lg:py-32 border-b border-slate-100">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                        <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800">
-                                <span class="w-2 h-2 rounded-full bg-indigo-600 mr-2 animate-pulse"></span> Welcome to my digital space
-                            </span>
-                            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight">
-                                Crafting Modern Web <span class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">Experiences</span>
-                            </h1>
-                            <p class="text-lg text-slate-600 max-w-2xl mx-auto lg:mx-0">
-                                Hi, I am <strong class="text-slate-900 font-semibold">N43aina</strong>. I design and build responsive static web applications with clean design aesthetics, performance optimization, and delightful user interactions.
-                            </p>
-                            <div class="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 pt-2">
-                                <button onclick="switchTab('about')" class="px-6 py-3 rounded-xl font-medium text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/25 transition-all duration-200">
-                                    Explore About Me <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
-                                </button>
-                                <button onclick="switchTab('contact')" class="px-6 py-3 rounded-xl font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-all duration-200">
-                                    Get in Touch
-                                </button>
-                            </div>
-                        </div>
-                        <div class="lg:col-span-5 flex justify-center">
-                            <div class="relative w-72 h-72 sm:w-80 sm:h-80 rounded-3xl bg-gradient-to-tr from-indigo-600 to-violet-500 p-2 shadow-2xl shadow-indigo-500/20 rotate-1 hover:rotate-0 transition-transform duration-300">
-                                <div class="w-full h-full bg-white rounded-[22px] flex flex-col items-center justify-center p-6 text-center space-y-4">
-                                    <div class="w-20 h-20 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-3xl font-bold shadow-inner">
-                                        <i class="fa-solid fa-code"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-slate-800 text-lg">N43aina Studio</h3>
-                                        <p class="text-xs text-slate-500 mt-1">Clean Code & Intuitive UI/UX Design</p>
-                                    </div>
-                                    <div class="flex space-x-2 text-indigo-500 text-sm">
-                                        <i class="fa-brands fa-html5"></i>
-                                        <i class="fa-brands fa-css3-alt"></i>
-                                        <i class="fa-brands fa-js"></i>
-                                        <i class="fa-brands fa-figma"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+		<p>
+			Thanks for visiting!
+		</p>
+	</main>
 
-            <!-- Features / Highlights Grid -->
-            <div class="py-20 bg-white">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="text-center max-w-3xl mx-auto space-y-4 mb-16">
-                        <h2 class="text-3xl font-bold text-slate-900">What I Do</h2>
-                        <p class="text-slate-600">Delivering top-notch web solutions with attention to detail and modern architecture.</p>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div class="p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                            <div class="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl mb-6 shadow-md shadow-indigo-500/20">
-                                <i class="fa-solid fa-laptop-code"></i>
-                            </div>
-                            <h3 class="text-xl font-semibold text-slate-900 mb-3">Responsive Layouts</h3>
-                            <p class="text-slate-600 text-sm leading-relaxed">
-                                Fully adaptive interfaces optimized seamlessly for mobile phones, tablets, and large desktop screens.
-                            </p>
-                        </div>
-                        <div class="p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                            <div class="w-12 h-12 rounded-xl bg-violet-600 text-white flex items-center justify-center text-xl mb-6 shadow-md shadow-violet-500/20">
-                                <i class="fa-solid fa-paintbrush"></i>
-                            </div>
-                            <h3 class="text-xl font-semibold text-slate-900 mb-3">Modern Aesthetics</h3>
-                            <p class="text-slate-600 text-sm leading-relaxed">
-                                Clean typography, harmonious color palettes, subtle shadows, and delightful UI transitions.
-                            </p>
-                        </div>
-                        <div class="p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                            <div class="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-xl mb-6 shadow-md shadow-emerald-500/20">
-                                <i class="fa-solid fa-gauge-high"></i>
-                            </div>
-                            <h3 class="text-xl font-semibold text-slate-900 mb-3">Performance First</h3>
-                            <p class="text-slate-600 text-sm leading-relaxed">
-                                Lightweight static page architecture ensuring lightning-fast load times and smooth interactions.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+	<footer>
+		&copy; 2026 n43aina
+	</footer>
 
-        <!-- ================= ABOUT PAGE ================= -->
-        <section id="page-about" class="tab-content py-20">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <!-- Header Banner -->
-                <div class="text-center max-w-3xl mx-auto space-y-4 mb-16">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-800">
-                        Get to know the creator
-                    </span>
-                    <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">About N43aina</h1>
-                    <p class="text-slate-600 text-lg">Passionate web developer and designer dedicated to building beautiful, accessible digital experiences.</p>
-                </div>
-
-                <!-- Bio Grid -->
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-20">
-                    <div class="lg:col-span-5">
-                        <div class="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-gradient-to-br from-indigo-500 to-violet-600 p-1">
-                            <div class="bg-white rounded-[22px] p-8 text-center space-y-6">
-                                <div class="w-32 h-32 mx-auto rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white text-5xl font-bold shadow-lg">
-                                    N
-                                </div>
-                                <div>
-                                    <h3 class="text-2xl font-bold text-slate-900">N43aina</h3>
-                                    <p class="text-indigo-600 font-medium text-sm mt-1">Frontend Developer & Creator</p>
-                                </div>
-                                <div class="flex justify-center space-x-4 pt-2 text-slate-600">
-                                    <a href="#" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 flex items-center justify-center transition-colors"><i class="fa-brands fa-github"></i></a>
-                                    <a href="#" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 flex items-center justify-center transition-colors"><i class="fa-brands fa-linkedin-in"></i></a>
-                                    <a href="#" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 flex items-center justify-center transition-colors"><i class="fa-brands fa-twitter"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="lg:col-span-7 space-y-6">
-                        <h2 class="text-2xl font-bold text-slate-900">Building the web with passion & precision</h2>
-                        <p class="text-slate-600 leading-relaxed">
-                            Hello! I am <strong class="text-slate-800">N43aina</strong>, an independent creator and developer who loves transforming ideas into clean, functional, and aesthetically pleasing web interfaces. With a strong focus on frontend technologies, semantic HTML, modern CSS frameworks, and lightweight JavaScript, I strive to make the web simpler and more engaging.
-                        </p>
-                        <p class="text-slate-600 leading-relaxed">
-                            Whether it is building responsive multi-page static layouts, designing user-friendly interfaces, or optimizing web performance, I approach each project with creativity and dedication.
-                        </p>
-
-                        <!-- Skill Tags -->
-                        <div class="pt-4">
-                            <h4 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3">Core Expertise</h4>
-                            <div class="flex flex-wrap gap-2">
-                                <span class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 font-medium text-sm">HTML5 & Semantic Markup</span>
-                                <span class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 font-medium text-sm">Tailwind CSS</span>
-                                <span class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 font-medium text-sm">JavaScript (ES6+)</span>
-                                <span class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 font-medium text-sm">UI/UX Design</span>
-                                <span class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 font-medium text-sm">Responsive Web Design</span>
-                                <span class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 font-medium text-sm">Git & Version Control</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= CONTACT PAGE ================= -->
-        <section id="page-contact" class="tab-content py-20">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <!-- Header Banner -->
-                <div class="text-center max-w-3xl mx-auto space-y-4 mb-16">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800">
-                        Get in touch
-                    </span>
-                    <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">Contact N43aina</h1>
-                    <p class="text-slate-600 text-lg">Have a project in mind, a question, or just want to say hello? Send me a message below!</p>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                    <!-- Contact Info Cards -->
-                    <div class="lg:col-span-5 space-y-6">
-                        <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-start space-x-4">
-                            <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shrink-0">
-                                <i class="fa-solid fa-envelope"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-semibold text-slate-900">Email Address</h3>
-                                <p class="text-slate-600 text-sm mt-1">contact@n43aina-portfolio.dev</p>
-                            </div>
-                        </div>
-
-                        <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-start space-x-4">
-                            <div class="w-12 h-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl shrink-0">
-                                <i class="fa-solid fa-location-dot"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-semibold text-slate-900">Location</h3>
-                                <p class="text-slate-600 text-sm mt-1">Global / Remote Developer</p>
-                            </div>
-                        </div>
-
-                        <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-start space-x-4">
-                            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
-                                <i class="fa-solid fa-clock"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-semibold text-slate-900">Working Hours</h3>
-                                <p class="text-slate-600 text-sm mt-1">Monday - Friday (9:00 AM - 6:00 PM)</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Contact Form Card -->
-                    <div class="lg:col-span-7">
-                        <div class="bg-white p-8 sm:p-10 rounded-3xl border border-slate-200 shadow-xl relative">
-                            <!-- Success Alert Box (Hidden by default) -->
-                            <div id="form-success" class="hidden mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center">
-                                <i class="fa-solid fa-circle-check text-emerald-600 text-lg mr-3"></i>
-                                <span>Thank you! Your message has been successfully sent to N43aina.</span>
-                            </div>
-
-                            <form id="contact-form" onsubmit="handleFormSubmit(event)" class="space-y-6">
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <div>
-                                        <label for="name" class="block text-sm font-medium text-slate-700 mb-2">Your Name</label>
-                                        <input type="text" id="name" required class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all" placeholder="John Doe">
-                                    </div>
-                                    <div>
-                                        <label for="email" class="block text-sm font-medium text-slate-700 mb-2">Your Email</label>
-                                        <input type="email" id="email" required class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all" placeholder="john@example.com">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label for="subject" class="block text-sm font-medium text-slate-700 mb-2">Subject</label>
-                                    <input type="text" id="subject" required class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all" placeholder="Project Inquiry / Collaboration">
-                                </div>
-                                <div>
-                                    <label for="message" class="block text-sm font-medium text-slate-700 mb-2">Message</label>
-                                    <textarea id="message" rows="5" required class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all resize-none" placeholder="Write your message here..."></textarea>
-                                </div>
-                                <button type="submit" class="w-full py-3.5 px-6 rounded-xl text-white font-medium bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/25 transition-all duration-200 flex items-center justify-center">
-                                    <i class="fa-solid fa-paper-plane mr-2"></i>Send Message
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Footer with Author Attribution -->
-    <footer class="bg-white border-t border-slate-200 py-12 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                        N
-                    </div>
-                    <span class="font-bold text-slate-900">N43aina Portfolio</span>
-                </div>
-                <p class="text-sm text-slate-500 text-center">
-                    &copy; 2026 Designed and Developed with <i class="fa-solid fa-heart text-rose-500 mx-1"></i> by <strong class="text-slate-800 font-semibold">N43aina</strong>. All rights reserved.
-                </p>
-                <div class="flex space-x-4 text-slate-400">
-                    <a href="#" class="hover:text-indigo-600 transition-colors"><i class="fa-brands fa-github text-lg"></i></a>
-                    <a href="#" class="hover:text-indigo-600 transition-colors"><i class="fa-brands fa-linkedin text-lg"></i></a>
-                    <a href="#" class="hover:text-indigo-600 transition-colors"><i class="fa-brands fa-twitter text-lg"></i></a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Client-Side Tab Switching & Form Logic -->
-    <script>
-        function switchTab(tabId) {
-            // Hide all tab contents
-            const tabs = document.querySelectorAll('.tab-content');
-            tabs.forEach(tab => {
-                tab.classList.remove('active');
-            });
-
-            // Show selected tab content
-            const targetTab = document.getElementById('page-' + tabId);
-            if (targetTab) {
-                targetTab.classList.add('active');
-            }
-
-            // Update Desktop Nav Button Styles
-            const navButtons = document.querySelectorAll('.nav-btn');
-            navButtons.forEach(btn => {
-                btn.className = "nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-slate-600 hover:text-indigo-600 hover:bg-slate-100";
-            });
-            const activeNavBtn = document.getElementById('nav-' + tabId);
-            if (activeNavBtn) {
-                activeNavBtn.className = "nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-indigo-600 bg-indigo-50";
-            }
-
-            // Update Mobile Nav Button Styles
-            const mobNavButtons = document.querySelectorAll('.mob-nav-btn');
-            mobNavButtons.forEach(btn => {
-                btn.className = "mob-nav-btn w-full text-left px-3 py-2 rounded-lg text-base font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-100 flex items-center";
-            });
-            const activeMobBtn = document.getElementById('mob-nav-' + tabId);
-            if (activeMobBtn) {
-                activeMobBtn.className = "mob-nav-btn w-full text-left px-3 py-2 rounded-lg text-base font-medium text-indigo-600 bg-indigo-50 flex items-center";
-            }
-
-            // Scroll smoothly back to top when switching tabs
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-menu');
-            const icon = document.getElementById('menu-icon');
-            menu.classList.toggle('hidden');
-            if (menu.classList.contains('hidden')) {
-                icon.className = "fa-solid fa-bars text-xl";
-            } else {
-                icon.className = "fa-solid fa-xmark text-xl";
-            }
-        }
-
-        function handleFormSubmit(event) {
-            event.preventDefault();
-            const successBox = document.getElementById('form-success');
-            const form = document.getElementById('contact-form');
-            
-            // Show success alert box
-            successBox.classList.remove('hidden');
-            form.reset();
-
-            // Hide success box after 5 seconds
-            setTimeout(() => {
-                successBox.classList.add('hidden');
-            }, 5000);
-        }
-    </script>
 </body>
 </html>
+`
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.New("page").Parse(page))
+	tmpl.Execute(w, nil)
+}
+
+func main() {
+	http.HandleFunc("/", handler)
+
+	log.Println("Server running at http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
